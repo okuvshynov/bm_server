@@ -28,8 +28,15 @@ def send_request(content, url, max_tokens):
     return response.json()
 
 
-def process_file_versions(filename, url, max_tokens, line_counts=None):
-    """Process multiple versions of the file with different line counts."""
+def process_file_versions(filename, url, max_tokens, num_splits=100):
+    """Process multiple versions of the file with different line counts.
+    
+    Args:
+        filename: Input file to process
+        url: API endpoint URL
+        max_tokens: Maximum tokens for response
+        num_splits: Number of test points (1 = entire file, 100 = test at 1%, 2%, ..., 100%)
+    """
     file_path = Path(filename)
     
     if not file_path.exists():
@@ -41,10 +48,13 @@ def process_file_versions(filename, url, max_tokens, line_counts=None):
     
     total_lines = len(all_lines)
     
-    # Default line counts if not specified
-    if line_counts is None:
-        # Generate versions: 1%, 2%, 3%, ..., 100% of file (100 versions)
-        percentages = [i / 100.0 for i in range(1, 101)]
+    # Generate line counts based on number of splits
+    if num_splits == 1:
+        # Test entire file only
+        line_counts = [total_lines]
+    else:
+        # Generate evenly distributed test points
+        percentages = [i / num_splits for i in range(1, num_splits + 1)]
         line_counts = [max(1, int(total_lines * p)) for p in percentages]
         # Remove duplicates and sort
         line_counts = sorted(set(line_counts))
@@ -52,9 +62,6 @@ def process_file_versions(filename, url, max_tokens, line_counts=None):
     results = []
     
     for n_lines in line_counts:
-        if n_lines > total_lines:
-            n_lines = total_lines
-        
         content = ''.join(all_lines[:n_lines])
         
         print(f"\nProcessing {filename} with first {n_lines}/{total_lines} lines...")
@@ -100,8 +107,8 @@ def main():
                         help='API endpoint URL (default: http://localhost:8088/v1/chat/completions)')
     parser.add_argument('--max-tokens', type=int, default=64,
                         help='Maximum tokens for response (default: 64)')
-    parser.add_argument('--line-counts', type=int, nargs='*',
-                        help='Specific line counts to test (e.g., 10 20 50 100). If not specified, uses percentages.')
+    parser.add_argument('--splits', type=int, default=100,
+                        help='Number of test points (1=entire file, 100=test at 1%%, 2%%, ..., 100%%). Default: 100')
     parser.add_argument('--output', help='Output JSON file for results')
     
     args = parser.parse_args()
@@ -110,7 +117,7 @@ def main():
         args.filename,
         args.url,
         args.max_tokens,
-        args.line_counts
+        args.splits
     )
     
     # Save results if output file specified

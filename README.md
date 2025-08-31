@@ -29,7 +29,7 @@ pip install matplotlib requests
 ### Running Benchmarks
 
 ```bash
-# Basic usage - process a file with default settings
+# Basic usage - process a file with default settings (100 test points)
 ./benchmark.py path/to/input/file.cpp
 
 # Save results to JSON
@@ -41,8 +41,14 @@ pip install matplotlib requests
   --max-tokens 128 \
   --output results.json
 
-# Test with specific line counts
-./benchmark.py input.cpp --line-counts 100 500 1000 2000
+# Test entire file only (single measurement)
+./benchmark.py input.cpp --splits 1
+
+# Test with 10 evenly distributed points (10%, 20%, ..., 100%)
+./benchmark.py input.cpp --splits 10
+
+# Test with 50 points for more granular analysis
+./benchmark.py input.cpp --splits 50
 ```
 
 ### Visualizing Results

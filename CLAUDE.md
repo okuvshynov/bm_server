@@ -7,14 +7,15 @@ Benchmarking tools for testing LLM server performance with varying input sizes.
 - Added `benchmark.py`: Main benchmarking script for testing LLM server with progressively larger inputs
 - Added `plot_benchmark.py`: Visualization tool for benchmark results with dual Y-axis plotting
 - Fixed JSON key mismatch issue in summary computation (prompt_ms/predicted_ms instead of non-existent duration keys)
+- Replaced specific line counts option with `--splits` parameter for more intuitive control (1 = entire file, 100 = 100 test points)
 
 ## Technical Details
 
 ### benchmark.py
-- Tests server with file inputs from 1% to 100% of total lines
+- Tests server with file inputs divided into configurable number of test points
+- `--splits` parameter controls granularity (1 = entire file, 100 = test at 1%, 2%, ..., 100%)
 - Sends requests to configurable API endpoint (default: http://localhost:8088/v1/chat/completions)
 - Collects timing metrics and saves to JSON
-- Supports custom line counts or automatic percentage-based testing
 
 ### plot_benchmark.py
 - Reads benchmark results from JSON
